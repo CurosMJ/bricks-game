@@ -8,11 +8,16 @@ paramsDetector.filterByArea = True
 paramsDetector.maxArea = 1500
 detector = cv2.SimpleBlobDetector_create(paramsDetector)
 
-cap = cv2.VideoCapture(0)
-cv2.namedWindow('image')
-
 def blank():
     return None
+
+def nothing(x):
+    return None
+
+cap = cv2.VideoCapture(0)
+cv2.namedWindow('image')
+cv2.namedWindow('leye')
+cv2.createTrackbar('threshold', 'image', 32, 255, nothing)
 
 leftHandler = blank
 rightHandler = blank
@@ -43,7 +48,8 @@ def detect_eyes(img, cascade):
     height = np.size(img, 0)
     left_eye = None
     right_eye = None
-    
+    leyebw = None
+
     for (x, y, w, h) in eyes:
         if y > height / 2:
             pass
@@ -51,17 +57,37 @@ def detect_eyes(img, cascade):
         color = (255, 0, 0)
         if eyecenter < width * 0.5:
             left_eye = img[y:y + h, x:x + w]
+            leyebw = gray_frame[y:y + h, x:x + w]
             color = (0, 0, 255)
         else:
             right_eye = img[y:y + h, x:x + w]
             color = (255, 0, 0)
         cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)        
-    
-    if left_eye is None and right_eye is not None:
-        rightHandler()
 
-    if left_eye is not None and right_eye is None:
-        leftHandler()
+    if left_eye is not None:
+        thresh = cv2.getTrackbarPos('threshold', 'image')
+        _, processed = cv2.threshold(leyebw, thresh, 255, cv2.THRESH_BINARY)
+        # processed = cv2.flip(processed, +1)
+        cv2.imshow('leye', processed)
+        h,w = processed.shape
+        leftST = processed[:h, :int(w/2)]
+        leftWhite = cv2.countNonZero(leftST)
+        
+        rightST = processed[:h, int(w/2):w]
+        rightWhite = cv2.countNonZero(rightST)
+
+        # print((leftWhite, rightWhite))
+        if abs(leftWhite - rightWhite) > 50:
+            if rightWhite > leftWhite:
+                rightHandler()
+            elif rightWhite < leftWhite:
+                leftHandler()
+
+    # if left_eye is None and right_eye is not None:
+    #     rightHandler()
+
+    # if left_eye is not None and right_eye is None:
+    #     leftHandler()
 
     return left_eye, right_eye
 
