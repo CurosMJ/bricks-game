@@ -21,6 +21,8 @@ cv2.createTrackbar('threshold', 'image', 32, 255, nothing)
 
 leftHandler = blank
 rightHandler = blank
+levelLeftHandler = blank
+levelRightHandler = blank
 
 def detect_faces(img, cascade):
     gray_frame = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -100,12 +102,11 @@ def detect_eyes(img, cascade):
             else:
                 rightHandler()
 
+    if left_eye is None and right_eye is not None:
+        levelRightHandler()
 
-    # if left_eye is None and right_eye is not None:
-    #     rightHandler()
-
-    # if left_eye is not None and right_eye is None:
-    #     leftHandler()
+    if left_eye is not None and right_eye is None:
+        levelLeftHandler()
 
     return left_eye, right_eye
 
@@ -115,11 +116,11 @@ def set_handlers(left, right):
 
 def frame():
     _, frame = cap.read()
-    # frame = cv2.resize(frame, None, fx=0.6, fy=0.6)
     face_frame = detect_faces(frame, faceCascade)
     if face_frame is not None:
         detect_eyes(face_frame, eyeCascade)
     frame = cv2.flip(frame, +1)
+    frame = cv2.resize(frame, None, fx=0.6, fy=0.6)
     cv2.imshow('image', frame)
 
 def destroy():

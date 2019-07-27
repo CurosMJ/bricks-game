@@ -38,6 +38,7 @@ class Bricka:
     def __init__(self):
         pygame.init()
 
+        self.level = 1
         self.screen = pygame.display.set_mode(SCREEN_SIZE)
         pygame.display.set_caption("Bricks-O-Bricks")
 
@@ -78,14 +79,22 @@ class Bricka:
         for brick in self.bricks:
             pygame.draw.rect(self.screen, BRICK_COLOR, brick)
 
+    def level_decrease(self):
+        if self.state != STATE_PLAYING:
+            if self.level > 1:
+                self.level -= 1
+    
+    def level_increase(self):
+        if self.state != STATE_PLAYING:        
+            if self.level < 4:
+                self.level += 1
+
     def left_click(self):
-        print('lckick')
         self.paddle.left -= 30
         if self.paddle.left < 0:
-            self.paddle.left = 0
+            self.paddle.left = 0            
     
     def right_click(self):
-        print('rckick')
         self.paddle.left += 30
         maxPaddleLeft = SCREEN_SIZE[0] - self.paddle.width
         if self.paddle.left > maxPaddleLeft:
@@ -106,7 +115,7 @@ class Bricka:
                 # if ev.key == pygame.K_RIGHT:
                 #     right_click()
                 if ev.key == pygame.K_SPACE and self.state == STATE_BALL_IN_PADDLE:
-                    self.ball_vel = [BALL_VEL, -BALL_VEL]
+                    self.ball_vel = [BALL_VEL + (self.level * 2), -(BALL_VEL + (self.level * 2))]
                     self.state = STATE_PLAYING
                 elif ev.key == pygame.K_RETURN and (self.state == STATE_GAME_OVER or self.state == STATE_WON):
                     self.init_game()
@@ -176,7 +185,7 @@ class Bricka:
             self.ball.left = self.paddle.left + self.paddle.width / 2
             self.ball.top  = self.paddle.top - self.ball.height
             # self.show_message("PRESS SPACE TO LAUNCH THE BALL ")
-            self.show_message("PRESS 1. Easy 2.Medium 3.Hard Q.Quit  PRESS SPACE TO LAUNCH THE BALL")
+            self.show_message("PRESS Q to Quit, SPACE to launch the ball, level: " + str(self.level))
         elif self.state == STATE_GAME_OVER:
             self.show_message("GAME OVER. PRESS ENTER TO PLAY AGAIN")
         elif self.state == STATE_WON:
@@ -197,6 +206,8 @@ class Bricka:
     def run(self):
         track.leftHandler = lambda : self.left_click()
         track.rightHandler = lambda : self.right_click()
+        track.levelLeftHandler = lambda : self.level_decrease()
+        track.levelRightHandler = lambda : self.level_increase()
         while 1:
             self.frame()
             track.frame()
