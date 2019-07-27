@@ -4,8 +4,6 @@ import track as track
 
 SCREEN_SIZE  = 980,720
 
-SCREEN_SIZE
-
 # Object dimensions
 BRICK_WIDTH   = 60
 BRICK_HEIGHT  = 15
@@ -14,6 +12,7 @@ PADDLE_WIDTH = SCREEN_SIZE[0] / 3
 PADDLE_HEIGHT = 12
 BALL_DIAMETER = 16
 BALL_RADIUS   = int (BALL_DIAMETER / 2)
+BALL_VEL = 10
 
 MAX_PADDLE_X = SCREEN_SIZE[0] - PADDLE_WIDTH
 MAX_BALL_X   = SCREEN_SIZE[0] - BALL_DIAMETER
@@ -60,7 +59,7 @@ class Bricka:
         self.paddle   = pygame.Rect(300,PADDLE_Y,PADDLE_WIDTH,PADDLE_HEIGHT)
         self.ball     = pygame.Rect(300,PADDLE_Y - BALL_DIAMETER,BALL_DIAMETER,BALL_DIAMETER)
 
-        self.ball_vel = [5,-5]
+        self.ball_vel = [BALL_VEL, -BALL_VEL]
 
         self.create_bricks()
 
@@ -107,7 +106,7 @@ class Bricka:
                 # if ev.key == pygame.K_RIGHT:
                 #     right_click()
                 if ev.key == pygame.K_SPACE and self.state == STATE_BALL_IN_PADDLE:
-                    self.ball_vel = [5,-5]
+                    self.ball_vel = [BALL_VEL, -BALL_VEL]
                     self.state = STATE_PLAYING
                 elif ev.key == pygame.K_RETURN and (self.state == STATE_GAME_OVER or self.state == STATE_WON):
                     self.init_game()

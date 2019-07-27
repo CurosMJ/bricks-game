@@ -40,6 +40,30 @@ def detect_faces(img, cascade):
         frame = img[y:y + h, x:x + w]
     return frame
 
+def cut_eyebrow(img):
+    width = np.size(img, 1)
+    height = np.size(img, 0)
+    return img[int(height/4):height, 0:width]
+
+def find_direction(eye):
+    thresh = cv2.getTrackbarPos('threshold', 'image')
+    _, processed = cv2.threshold(eye, thresh, 255, cv2.THRESH_BINARY)
+    # processed = cv2.flip(processed, +1)
+    processed = cut_eyebrow(processed)
+    cv2.imshow('leye', processed)
+    h, w = processed.shape
+    leftST = processed[:h, :int(w / 2)]
+    leftWhite = cv2.countNonZero(leftST)
+
+    rightST = processed[:h, int(w / 2):w]
+    rightWhite = cv2.countNonZero(rightST)
+
+    if abs(leftWhite - rightWhite) > 20:
+        if rightWhite > leftWhite:
+            return 'left'
+        elif rightWhite < leftWhite:
+            return 'right'
+
 
 def detect_eyes(img, cascade):
     gray_frame = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -49,6 +73,7 @@ def detect_eyes(img, cascade):
     left_eye = None
     right_eye = None
     leyebw = None
+    reyebw = None
 
     for (x, y, w, h) in eyes:
         if y > height / 2:
@@ -61,27 +86,20 @@ def detect_eyes(img, cascade):
             color = (0, 0, 255)
         else:
             right_eye = img[y:y + h, x:x + w]
+            reyebw = gray_frame[y:y + h, x:x + w]
             color = (255, 0, 0)
         cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)        
 
-    if left_eye is not None:
-        thresh = cv2.getTrackbarPos('threshold', 'image')
-        _, processed = cv2.threshold(leyebw, thresh, 255, cv2.THRESH_BINARY)
-        # processed = cv2.flip(processed, +1)
-        cv2.imshow('leye', processed)
-        h,w = processed.shape
-        leftST = processed[:h, :int(w/2)]
-        leftWhite = cv2.countNonZero(leftST)
-        
-        rightST = processed[:h, int(w/2):w]
-        rightWhite = cv2.countNonZero(rightST)
-
-        # print((leftWhite, rightWhite))
-        if abs(leftWhite - rightWhite) > 50:
-            if rightWhite > leftWhite:
-                rightHandler()
-            elif rightWhite < leftWhite:
+    if left_eye is not None and right_eye is not None:
+        led = find_direction(leyebw)
+        red = find_direction(reyebw)
+        # print((led, red))
+        if led == red and led is not None:
+            if led == 'right':
                 leftHandler()
+            else:
+                rightHandler()
+
 
     # if left_eye is None and right_eye is not None:
     #     rightHandler()
