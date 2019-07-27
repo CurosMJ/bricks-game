@@ -97,7 +97,7 @@ def set_handlers(left, right):
 
 def frame():
     _, frame = cap.read()
-    frame = cv2.resize(frame, None, fx=0.6, fy=0.6)
+    # frame = cv2.resize(frame, None, fx=0.6, fy=0.6)
     face_frame = detect_faces(frame, faceCascade)
     if face_frame is not None:
         detect_eyes(face_frame, eyeCascade)
